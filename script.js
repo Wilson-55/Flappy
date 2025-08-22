@@ -14,16 +14,19 @@
   let bird = {
     x: 80,
     y: canvas.height / 2,
-    width: 34,
-    height: 24,
+    width: 40,   // adjusted to fit PNG proportions
+    height: 40,
     velocity: 0,
   };
+
+  // Load bird image
+  const birdImg = new Image();
+  birdImg.src = "assets/bird.png"; // make sure this path is correct
 
   let pipes = [];
   let clouds = [];
   let frameCount = 0;
   let score = 0;
-  // Load saved high score if exists
   let highScore = 0;
   const savedHighScore = localStorage.getItem('flappyHighScore');
   if (savedHighScore !== null) {
@@ -110,56 +113,26 @@
     }
   }
 
+  // 🟡 Use the PNG bird here
   function drawBird() {
-    const x = bird.x;
-    const y = bird.y;
-
-    // Body
-    ctx.fillStyle = '#FFD700';
-    ctx.strokeStyle = '#DAA520';
-    ctx.lineWidth = 2;
-
-    ctx.beginPath();
-    ctx.ellipse(x, y, bird.width / 2, bird.height / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    // Eye white
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.ellipse(x + 6, y - 5, 6, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#444';
-    ctx.stroke();
-
-    // Eye pupil
-    ctx.fillStyle = 'black';
-    ctx.beginPath();
-    ctx.ellipse(x + 7, y - 5, 3, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Beak
-    ctx.fillStyle = '#FFA500';
-    ctx.beginPath();
-    ctx.moveTo(x + bird.width / 2, y);
-    ctx.lineTo(x + bird.width / 2 + 10, y + 4);
-    ctx.lineTo(x + bird.width / 2 + 10, y - 4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    ctx.drawImage(
+      birdImg,
+      bird.x - bird.width / 2,
+      bird.y - bird.height / 2,
+      bird.width,
+      bird.height
+    );
   }
 
   function updateBird() {
     bird.velocity += gravity;
     bird.y += bird.velocity;
 
-    // Prevent bird from going above canvas
     if (bird.y - bird.height / 2 < 0) {
       bird.y = bird.height / 2;
       if (bird.velocity < 0) bird.velocity = 0;
     }
 
-    // Prevent bird from going below canvas - triggers game over
     if (bird.y + bird.height / 2 > canvas.height) {
       bird.y = canvas.height - bird.height / 2;
       gameOver = true;
@@ -174,7 +147,6 @@
     pipes.forEach(pipe => {
       pipe.x -= pipeSpeed;
 
-      // Scoring when passing pipes
       if (!pipe.passed && pipe.x + pipe.width < bird.x) {
         score++;
         pipe.passed = true;
@@ -183,7 +155,6 @@
         if (score > highScore) {
           highScore = score;
           highScoreElem.textContent = 'High Score: ' + highScore;
-          // Save high score persistently
           localStorage.setItem('flappyHighScore', highScore);
         }
       }
@@ -219,7 +190,6 @@
       const tbw = pipe.width;
       const tbh = canvas.height - pipe.bottom;
 
-      // Top pipe collision
       if (
         bx < tx + tw &&
         bx + bw > tx &&
@@ -229,7 +199,6 @@
         gameOver = true;
       }
 
-      // Bottom pipe collision
       if (
         bx < bxp + tbw &&
         bx + bw > bxp &&
@@ -258,18 +227,12 @@
   }
 
   function draw() {
-    // Background sky
     ctx.fillStyle = '#70c5ce';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Clouds
     clouds.forEach(drawCloud);
-
-    // Pipes
     drawPipes();
-
-    // Bird
-    drawBird();
+    drawBird(); // now draws the PNG
   }
 
   function gameLoop() {
@@ -282,7 +245,6 @@
       draw();
       requestAnimationFrame(gameLoop);
     } else {
-      // Overlay on game over
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -298,7 +260,6 @@
     }
   }
 
-  // Click to jump or restart game
   canvas.addEventListener('click', () => {
     if (gameOver) {
       resetGame();
@@ -308,9 +269,10 @@
     }
   });
 
-  // Initialize display and start game
   scoreElem.textContent = 'Score: 0';
   highScoreElem.textContent = 'High Score: ' + highScore;
 
-  gameLoop();
+  birdImg.onload = () => {
+    gameLoop(); // start only after the bird image is loaded
+  };
 })();
