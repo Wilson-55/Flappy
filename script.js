@@ -14,14 +14,15 @@
   let bird = {
     x: 80,
     y: canvas.height / 2,
-    width: 40,   // adjusted to fit PNG proportions
+    width: 40,   // size to draw the bird
     height: 40,
     velocity: 0,
   };
 
-  // Load bird image
+  // 🔹 Load the sprite
   const birdImg = new Image();
-  birdImg.src = "assets/bird.png"; // make sure this path is correct
+  birdImg.src = "7b2efed4-adcf-4d5d-a5ea-d5f432444ae7.png"; 
+  // ⚠️ make sure this file is in the same folder as index.html, or adjust the path
 
   let pipes = [];
   let clouds = [];
@@ -35,7 +36,7 @@
 
   let gameOver = false;
 
-  // Create initial clouds
+  // --- Clouds setup ---
   for (let i = 0; i < 5; i++) {
     clouds.push({
       x: Math.random() * canvas.width,
@@ -113,7 +114,7 @@
     }
   }
 
-  // 🟡 Use the PNG bird here
+  // 🟡 Draw bird sprite instead of oval
   function drawBird() {
     ctx.drawImage(
       birdImg,
@@ -232,7 +233,7 @@
 
     clouds.forEach(drawCloud);
     drawPipes();
-    drawBird(); // now draws the PNG
+    drawBird(); // now draws the sprite
   }
 
   function gameLoop() {
@@ -273,6 +274,6 @@
   highScoreElem.textContent = 'High Score: ' + highScore;
 
   birdImg.onload = () => {
-    gameLoop(); // start only after the bird image is loaded
+    gameLoop(); // start only after sprite is loaded
   };
 })();
