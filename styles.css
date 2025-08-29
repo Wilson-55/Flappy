@@ -36,3 +36,49 @@ canvas {
   background-color: #70c5ce;
   display: block;
 }
+
+/* ==== Added: Hat Menu styles ==== */
+#hatMenu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 20px 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  text-align: center;
+  z-index: 2000;
+  width: min(380px, 92vw);
+}
+
+#hatOptions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0 16px;
+}
+
+.hatChoice {
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  background: #f9f9f9;
+}
+.hatChoice:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+.hatChoice.selected { border-color: #2c9c35; background: #eaffea; }
+.hatChoice.locked { opacity: 0.35; cursor: not-allowed; }
+
+#startGame {
+  background: #2c9c35;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+#startGame:hover { filter: brightness(1.05); }
