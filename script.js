@@ -5,6 +5,12 @@
   const scoreElem = document.getElementById('score');
   const highScoreElem = document.getElementById('highScore');
 
+  // ==== Added: Hat menu elements ====
+  const hatMenu = document.getElementById('hatMenu');
+  const hatOptionsElem = document.getElementById('hatOptions');
+  const startBtn = document.getElementById('startGame');
+
+  // ==== Original constants ====
   const gravity = 0.3;
   const jumpPower = -6;
   const pipeWidth = 60;
@@ -19,10 +25,29 @@
     velocity: 0,
   };
 
-  // 🔹 Load the sprite
+  // 🔹 Load the sprite (original)
   const birdImg = new Image();
   birdImg.src = "7b2efed4-adcf-4d5d-a5ea-d5f432444ae7.png"; 
-  // ⚠️ make sure this file is in the same folder as index.html, or adjust the path
+  // make sure this file is alongside index.html, or adjust the path
+
+  // ==== Added: Hats (use your PNGs) ====
+  // Place these PNGs next to index.html and script.js
+  //   - cap.png       (your red cap)
+  //   - crown.png     (your crown)
+  //   - wizard.png    (your wizard hat)
+  const hats = [
+    { name: "none",   img: null,         unlockScore: 0  },
+    { name: "cap",    img: new Image(),  unlockScore: 10 },
+    { name: "crown",  img: new Image(),  unlockScore: 25 },
+    { name: "wizard", img: new Image(),  unlockScore: 50 },
+  ];
+  hats[1].img.src = "cap.png";
+  hats[2].img.src = "crown.png";
+  hats[3].img.src = "wizard.png";
+
+  // Persist selected hat & max unlocked across sessions
+  let selectedHatIndex = parseInt(localStorage.getItem("flappyHatIndex") || "0", 10);
+  let maxUnlockedHat = parseInt(localStorage.getItem("flappyMaxHat") || "0", 10);
 
   let pipes = [];
   let clouds = [];
@@ -35,8 +60,9 @@
   }
 
   let gameOver = false;
+  let gameStarted = false; // ==== Added: start only after hat chosen ====
 
-  // --- Clouds setup ---
+  // --- Clouds setup (original) ---
   for (let i = 0; i < 5; i++) {
     clouds.push({
       x: Math.random() * canvas.width,
@@ -114,8 +140,9 @@
     }
   }
 
-  // 🟡 Draw bird sprite instead of oval
+  // 🟡 Draw bird sprite + overlay hat (ADDED)
   function drawBird() {
+    // draw the original bird
     ctx.drawImage(
       birdImg,
       bird.x - bird.width / 2,
@@ -123,6 +150,20 @@
       bird.width,
       bird.height
     );
+
+    // overlay selected hat
+    const hat = hats[selectedHatIndex];
+    if (hat && hat.img) {
+      const hatWidth  = bird.width * 0.9;  // tweak as needed
+      const hatHeight = bird.height * 0.5;
+      ctx.drawImage(
+        hat.img,
+        bird.x - hatWidth / 2,
+        bird.y - bird.height / 2 - hatHeight * 0.2, // slight overlap on head
+        hatWidth,
+        hatHeight
+      );
+    }
   }
 
   function updateBird() {
@@ -158,6 +199,15 @@
           highScoreElem.textContent = 'High Score: ' + highScore;
           localStorage.setItem('flappyHighScore', highScore);
         }
+
+        // 🔓 ADDED: unlock hats by score thresholds
+        hats.forEach((hat, i) => {
+          if (score >= hat.unlockScore && i > maxUnlockedHat) {
+            maxUnlockedHat = i;
+            localStorage.setItem("flappyMaxHat", String(maxUnlockedHat));
+            buildHatMenu(); // refresh menu to show newly unlocked hat(s)
+          }
+        });
       }
     });
 
@@ -220,6 +270,7 @@
     score = 0;
     frameCount = 0;
     gameOver = false;
+    gameStarted = false; // ADDED
     scoreElem.textContent = 'Score: 0';
     highScoreElem.textContent = 'High Score: ' + highScore;
 
@@ -227,6 +278,10 @@
       cloud.x = Math.random() * canvas.width;
       cloud.y = Math.random() * (canvas.height / 2);
     });
+
+    // ADDED: show hat menu again on game over
+    hatMenu.style.display = "block";
+    buildHatMenu();
   }
 
   function draw() {
@@ -235,7 +290,7 @@
 
     clouds.forEach(drawCloud);
     drawPipes();
-    drawBird(); // now draws the sprite
+    drawBird(); // draws sprite + hat
   }
 
   function gameLoop() {
@@ -263,19 +318,76 @@
     }
   }
 
+  // ==== Added: Hat Menu builder ====
+  function buildHatMenu() {
+    hatOptionsElem.innerHTML = "";
+    hats.forEach((hat, i) => {
+      const div = document.createElement("div");
+      div.classList.add("hatChoice");
+      if (i > maxUnlockedHat) div.classList.add("locked");
+      if (i === selectedHatIndex) div.classList.add("selected");
+
+      const img = document.createElement("img");
+      // If "none", show a tiny bird head placeholder using the bird sprite
+      if (hat.img) {
+        img.src = hat.img.src;
+      } else {
+        img.src = "7b2efed4-adcf-4d5d-a5ea-d5f432444ae7.png";
+      }
+      img.width = 48;
+      img.height = 48;
+
+      div.appendChild(img);
+      div.title = hat.name + (i > 0 ? ` (Unlock: ${hat.unlockScore})` : " (Default)");
+
+      div.addEventListener("click", () => {
+        if (i <= maxUnlockedHat) {
+          selectedHatIndex = i;
+          localStorage.setItem("flappyHatIndex", String(i));
+          buildHatMenu();
+        }
+      });
+
+      hatOptionsElem.appendChild(div);
+    });
+  }
+
+  // ==== Controls (adapted to respect start state) ====
   canvas.addEventListener('click', () => {
     if (gameOver) {
       resetGame();
       gameLoop();
     } else {
+      if (!gameStarted) return; // don’t flap before starting
       bird.velocity = jumpPower;
     }
   });
 
+  // ==== Start button ====
+  startBtn.addEventListener("click", () => {
+    if (!gameStarted) {
+      hatMenu.style.display = "none";
+      gameStarted = true;
+      gameOver = false;
+      // ensure maxUnlockedHat at least matches current highScore at first run
+      hats.forEach((hat, i) => {
+        if (highScore >= hat.unlockScore && i > maxUnlockedHat) {
+          maxUnlockedHat = i;
+        }
+      });
+      localStorage.setItem("flappyMaxHat", String(maxUnlockedHat));
+      gameLoop();
+    }
+  });
+
+  // ==== UI init ====
   scoreElem.textContent = 'Score: 0';
   highScoreElem.textContent = 'High Score: ' + highScore;
 
   birdImg.onload = () => {
-    gameLoop(); // start only after sprite is loaded
+    // Build menu first; game starts when player clicks "Start Game"
+    buildHatMenu();
+    hatMenu.style.display = "block";
   };
 })();
+
