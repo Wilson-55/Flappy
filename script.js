@@ -14,8 +14,8 @@
   let bird = {
     x: 80,
     y: canvas.height / 2,
-    width: 40,   // size to draw the bird
-    height: 40,
+    width: 60,   // size to draw the bird
+    height: 60,
     velocity: 0,
   };
 
