@@ -80,5 +80,16 @@ canvas {
   padding: 10px 16px;
   font-size: 16px;
   cursor: pointer;
+  startButton.addEventListener("click", () => {
+  gameStarted = true;
+  startButton.style.display = "none";
+
+  // 🎩 Show hat menu when game starts
+  document.getElementById("hatMenu").style.display = "block";
+
+  resetGame();
+  gameLoop();
+});
+
 }
 #startGame:hover { filter: brightness(1.05); }
