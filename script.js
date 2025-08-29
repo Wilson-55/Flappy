@@ -176,7 +176,7 @@
 
   function checkCollision() {
     for (const pipe of pipes) {
-      const hitboxShrink = 8; // tweak this value to your liking (e.g., 6–10)
+      const hitboxShrink = 6; // tweak this value to your liking (e.g., 6–10)
 
       const bx = bird.x - bird.width / 2 + hitboxShrink;
       const by = bird.y - bird.height / 2 + hitboxShrink;
