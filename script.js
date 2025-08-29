@@ -176,10 +176,12 @@
 
   function checkCollision() {
     for (const pipe of pipes) {
-      const bx = bird.x - bird.width / 2;
-      const by = bird.y - bird.height / 2;
-      const bw = bird.width;
-      const bh = bird.height;
+      const hitboxShrink = 8; // tweak this value to your liking (e.g., 6–10)
+
+      const bx = bird.x - bird.width / 2 + hitboxShrink;
+      const by = bird.y - bird.height / 2 + hitboxShrink;
+      const bw = bird.width - hitboxShrink * 2;
+      const bh = bird.height - hitboxShrink * 2;
 
       const tx = pipe.x;
       const ty = 0;
